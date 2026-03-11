@@ -6,4 +6,18 @@ public class Cat extends Animal {
         super(name, colour, age);
         this.tailLength = tailLength;
     }
+
+    @Override
+    public void voice() {
+        System.out.println(name + ": meows");
+    }
+
+    public void catMethod() {
+        System.out.println("catMethod");
+    }
+
+    @Override
+    public String toString() {
+        return "CAT [" + name + " " + colour + " " + age + " " + tailLength + "]";
+    }
 }

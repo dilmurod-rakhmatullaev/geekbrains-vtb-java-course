@@ -6,4 +6,9 @@ public class Dog extends Animal {
         this.colour = color;
         this.age = age;
     }
+
+    @Override
+    public void voice() {
+        System.out.println(name + ": barks");
+    }
 }

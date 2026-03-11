@@ -1,6 +1,6 @@
 package com.geekbrains.lesson1.animals;
 
-public class Animal {
+public abstract class Animal {
     protected String name;
     protected String colour;
     protected int age;
@@ -26,9 +26,7 @@ public class Animal {
     }
 
 
-    public void voice() {
-        System.out.println(name + "meow");
-    }
+    public abstract void voice();
 
     public void info() {
         System.out.println(name + " " + colour + " " + age);
