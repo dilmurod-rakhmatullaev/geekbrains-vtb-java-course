@@ -3,43 +3,26 @@ package com.geekbrains.lesson1;
 import com.geekbrains.lesson1.animals.Animal;
 import com.geekbrains.lesson1.animals.Cat;
 import com.geekbrains.lesson1.animals.Dog;
+import com.geekbrains.lesson1.animals.Shark;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainApp {
     public static void main(String[] args) {
-        Cat cat1 = new Cat("Thomas", "white", 2, 15);
-        Cat cat2 = new Cat("Mario", "red", 3, 13);
+        List<Animal> animal = new ArrayList<>();
+        animal.add(new Cat("Tom"));
+        animal.add(new Dog("Rex"));
+        animal.add(new Shark("Blahaj"));
 
-        Dog dog1 = new Dog("Rex", "brown", 5);
-
-        cat1.info();
-        cat2.info();
-
-        cat1.voice();
-        dog1.voice();
-
-        Animal[] catsAndDogs = {
-                new Cat("Charlie", "black", 4, 16),
-                new Dog("Bella", "grey", 4)
-        };
-
-        for (Animal o : catsAndDogs) {
-            o.voice();
+        for (Animal one : animal) {
+            one.run(150);
+            one.swim(5);
         }
 
-        Animal wildCat = new Dog("Lucy", "pink", 8);
-        if (wildCat instanceof Cat) {
-            ((Cat) wildCat).catMethod();
-        } else {
-            System.out.println("not cat");
-        }
-
-        Object obj = new Cat("Justin", "red", 7, 20);
-        System.out.println(obj);
-
-        Box box1 = new Box("Brown", 5);
-        Box box2 = new Box("Brown", 5);
-
-        System.out.println(box1 == box2);
-        System.out.println(box1.equals(box2));
+        System.out.println("Amount of animals: " + animal.size());
+        System.out.println("Amount of Cats: " + Cat.getCatsCount());
+        System.out.println("Amount of Dogs: " + Dog.getDogsCount());
+        System.out.println("Amount of Sharks: " + Shark.getSharksCount());
     }
 }

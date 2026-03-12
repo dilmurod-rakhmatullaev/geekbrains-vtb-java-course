@@ -1,23 +1,27 @@
 package com.geekbrains.lesson1.animals;
 
 public class Cat extends Animal {
-    int tailLength;
-    public Cat(String name, String colour, int age, int tailLength) {
-        super(name, colour, age);
-        this.tailLength = tailLength;
+    private static final int RUN_RANGE_MAX = 200;
+    private static int catsCount = 0;
+    public Cat(String name) {
+        super(name);
+        catsCount++;
+    }
+    public static int getCatsCount() {
+        return catsCount;
     }
 
     @Override
-    public void voice() {
-        System.out.println(name + ": meows");
-    }
-
-    public void catMethod() {
-        System.out.println("catMethod");
+    public void run(int runRange) {
+        if (runRange <= RUN_RANGE_MAX) {
+            System.out.println(getName() + " ran " + runRange + " metres");
+        } else {
+            System.out.println(getName() + " can't run that far");
+        }
     }
 
     @Override
-    public String toString() {
-        return "CAT [" + name + " " + colour + " " + age + " " + tailLength + "]";
+    public void swim(int swimRange) {
+        System.out.println(getName() + " can't swim at all");
     }
 }
