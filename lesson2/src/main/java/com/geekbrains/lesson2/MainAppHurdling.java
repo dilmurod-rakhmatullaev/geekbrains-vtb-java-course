@@ -13,16 +13,16 @@ public class MainAppHurdling {
 
         Obstacle[] obstacles = {
                 new RunningTrack(200),
-                new RunningTrack(500),
-                new RunningTrack(1000),
-                new RunningTrack(2000),
-                new RunningTrack(5000),
-                new RunningTrack(6000),
                 new Hurdle(50),
+                new RunningTrack(500),
                 new Hurdle(100),
+                new RunningTrack(1000),
                 new Hurdle(125),
+                new RunningTrack(2000),
                 new Hurdle(150),
+                new RunningTrack(5000),
                 new Hurdle(175),
+                new RunningTrack(6000),
                 new Hurdle(200)
         };
 
