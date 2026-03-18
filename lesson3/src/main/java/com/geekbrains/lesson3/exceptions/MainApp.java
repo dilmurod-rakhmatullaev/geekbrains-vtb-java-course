@@ -1,47 +1,34 @@
 package com.geekbrains.lesson3.exceptions;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 
 public class MainApp {
     public static void main(String[] args) {
-        // Login App
-        System.out.println("--- Starting Login Process ---");
-
+        // old method, don't do this with resources
+        BufferedReader reader1 = null;
         try {
-            // 1. Validation (Logic check)
-            checkPassword("123");
-
-            // 2. Network Simulation (External check)
-            connectToServer();
-
-            System.out.println("Login Successful!");
-
-        } catch (IllegalArgumentException e) {
-            // Unchecked: User's fault (bad input)
-            System.out.println("Validation Error: " + e.getMessage());
-            System.out.println("Action: Please enter a password longer than 6 characters.");
-
+            reader1 = new BufferedReader(new FileReader("log.txt"));
+            System.out.println(reader1.readLine());
         } catch (IOException e) {
-            // Checked: External fault (no internet)
-            System.out.println("Network Error: " + e.getMessage());
-            System.out.println("Action: Check your Wi-Fi and try again.");
+            e.printStackTrace();
+        } finally {
+            if (reader1 != null) {
+                try {
+                    reader1.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
-        System.out.println("--- Process Finished ---");
-    }
-
-    // Unchecked: We decide that "short" is an error
-    public static void checkPassword(String password) {
-        if (password.length() < 6) {
-            throw new IllegalArgumentException("Password is too short!");
-        }
-    }
-
-    // Checked: Java forces us to handle the risk of a network crash
-    public static void connectToServer() throws IOException {
-        boolean isServerUp = false; // Mocking a server crash
-        if (!isServerUp) {
-            throw new IOException("Server is unreachable.");
+        // modern and efficient method
+        try (BufferedReader reader2 = new BufferedReader(new FileReader("log.txt"))) {
+            String line = reader2.readLine();
+            System.out.println("First Line: " + line);
+        } catch (IOException e) {
+            System.err.println("Error in reading file: " + e.getMessage());
         }
     }
 }
