@@ -1,4 +1,4 @@
-package com.geekbrains.multithreading;
+package com.geekbrains.multithreading.homework;
 
 public class Homework {
     private static final int SIZE = 10_000_000;
