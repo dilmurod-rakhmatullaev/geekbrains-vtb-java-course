@@ -1,4 +1,4 @@
-package com.geekbrains.lesson8;
+package com.geekbrains.lesson7;
 
 @FunctionalInterface
 public interface MyInterface {

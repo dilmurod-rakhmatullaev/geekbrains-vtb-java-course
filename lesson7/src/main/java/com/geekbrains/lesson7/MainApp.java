@@ -1,8 +1,12 @@
-package com.geekbrains.lesson8;
+package com.geekbrains.lesson7;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MainApp {
@@ -23,6 +27,17 @@ public class MainApp {
         Stream.of("AA", "BBB", "C", "DDDD").map((o) -> o.length()).forEach(System.out::println);
         Stream.of(1, 2, 3, 4).map((o) -> o * 10).forEach(System.out::println);
         Stream.of("UN", "ISO", "UNESCO").map(String::length).forEach(System.out::println);
+
+        try {
+            // Files.lines(Paths.get("text.txt"))
+            System.out.println(Files.lines(Paths.get("text.txt"))
+                    .map(line -> line.split("\\s"))
+                    .flatMap(Arrays::stream)
+                    .distinct()
+                    .collect(Collectors.joining(", ", "Unique words: ", ".")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void doSomething(Runnable runnableObj) {
@@ -51,5 +66,16 @@ public class MainApp {
         System.out.println(list.stream().allMatch(n -> n < 10));
         System.out.println(list.stream().anyMatch(n -> n == 4));
         System.out.println(list.stream().noneMatch(n -> n == 2));
+    }
+
+    private static void findAnyEx() {
+        List<Integer> list = new ArrayList<>(List.of(1, 2, 3, 4, 5));
+        list.stream().filter(n -> n > 7).findAny().ifPresent(System.out::println);
+    }
+
+    private static void reduceEx() {
+        List<Integer> list = new ArrayList<>(List.of(1, 2, 3, 4, 5));
+        System.out.println(list.stream().reduce(Integer::sum));
+        System.out.println(list.stream().reduce((a, b) -> (a + b)));
     }
 }
