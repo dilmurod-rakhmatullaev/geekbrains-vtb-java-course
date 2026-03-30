@@ -1,5 +1,7 @@
 package com.geekbrains.lesson7;
 
+// Создайте массив с набором слов, и с помощью Stream API найдите наиболее часто встречающееся;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
