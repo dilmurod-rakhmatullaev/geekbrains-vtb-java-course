@@ -1,0 +1,264 @@
+Server [localhost]:
+Database [postgres]:
+Port [5432]:
+Username [postgres]:
+Password for user postgres:
+
+psql (18.3)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+
+postgres=# \dt
+Did not find any tables.
+postgres=# \dn
+      List of schemas
+  Name  |       Owner
+--------+-------------------
+ public | pg_database_owner
+(1 row)
+
+
+postgres=# CREATE TABLE students (id serial, name text, score int);
+CREATE TABLE
+postgres=# \dt
+            List of tables
+ Schema |   Name   | Type  |  Owner
+--------+----------+-------+----------
+ public | students | table | postgres
+(1 row)
+
+
+postgres=# INSERT INTO students (name, score) VALUES ('Bob', 100);
+INSERT 0 1
+postgres=# INSERT INTO students (name, score) VALUES ('John', 90) RETURNING *;
+ id | name | score
+----+------+-------
+  2 | John |    90
+(1 row)
+
+
+INSERT 0 1
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  1 | Bob  |   100
+  2 | John |    90
+(2 rows)
+
+
+postgres=# INSERT INTO students (name, score) VALUES ('Tom', 80), ('Alex', 85), ('Lucy', 95) RETURNING *;
+ id | name | score
+----+------+-------
+  3 | Tom  |    80
+  4 | Alex |    85
+  5 | Lucy |    95
+(3 rows)
+
+
+INSERT 0 3
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  1 | Bob  |   100
+  2 | John |    90
+  3 | Tom  |    80
+  4 | Alex |    85
+  5 | Lucy |    95
+(5 rows)
+
+
+postgres=# SELECT * FROM students WHERE id > 1;
+ id | name | score
+----+------+-------
+  2 | John |    90
+  3 | Tom  |    80
+  4 | Alex |    85
+  5 | Lucy |    95
+(4 rows)
+
+
+postgres=# SELECT name FROM students WHERE id > 2;
+ name
+------
+ Tom
+ Alex
+ Lucy
+(3 rows)
+
+
+postgres=# SELECT * FROM students WHERE id > 1 ORDER BY score DESC;
+ id | name | score
+----+------+-------
+  5 | Lucy |    95
+  2 | John |    90
+  4 | Alex |    85
+  3 | Tom  |    80
+(4 rows)
+
+
+postgres=# UPDATE students SET score 60 WHERE name = 'Tom' RETURNING *;
+ERROR:  syntax error at or near "60"
+LINE 1: UPDATE students SET score 60 WHERE name = 'Tom' RETURNING *;
+                                  ^
+postgres=# UPDATE students SET score = 60 WHERE name = 'Tom' RETURNING *;
+ id | name | score
+----+------+-------
+  3 | Tom  |    60
+(1 row)
+
+
+UPDATE 1
+postgres=# select * from students order by score desc;
+ id | name | score
+----+------+-------
+  1 | Bob  |   100
+  5 | Lucy |    95
+  2 | John |    90
+  4 | Alex |    85
+  3 | Tom  |    60
+(5 rows)
+
+
+postgres=# DELETE FROM students WHERE score = 100 RETURNING *;
+ id | name | score
+----+------+-------
+  1 | Bob  |   100
+(1 row)
+
+
+DELETE 1
+postgres=# SELECT * FROM students ORDER BY score DESC;
+ id | name | score
+----+------+-------
+  5 | Lucy |    95
+  2 | John |    90
+  4 | Alex |    85
+  3 | Tom  |    60
+(4 rows)
+
+
+postgres=# INSERT INTO students (name, score) VALUES ('Sam', 75);
+INSERT 0 1
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  2 | John |    90
+  4 | Alex |    85
+  5 | Lucy |    95
+  3 | Tom  |    60
+  6 | Sam  |    75
+(5 rows)
+
+
+postgres=# SELECT * FROM students WHERE name LIKE 'L%';
+ id | name | score
+----+------+-------
+  5 | Lucy |    95
+(1 row)
+
+
+postgres=# SELECT * FROM students WHERE name LIKE '%m';
+ id | name | score
+----+------+-------
+  3 | Tom  |    60
+  6 | Sam  |    75
+(2 rows)
+
+
+postgres=# SELECT * FROM students WHERE name LIKE '_o_';
+ id | name | score
+----+------+-------
+  3 | Tom  |    60
+(1 row)
+
+
+postgres=# SELECT * FROM students WHERE name LIKE '_o%';
+ id | name | score
+----+------+-------
+  2 | John |    90
+  3 | Tom  |    60
+(2 rows)
+
+
+postgres=# SELECT * FROM students WHERE score BETWEEN 50 and 85;
+ id | name | score
+----+------+-------
+  4 | Alex |    85
+  3 | Tom  |    60
+  6 | Sam  |    75
+(3 rows)
+
+
+postgres=# SELECT name, score, score / 5 another_score FROM students;
+ name | score | another_score
+------+-------+---------------
+ John |    90 |            18
+ Alex |    85 |            17
+ Lucy |    95 |            19
+ Tom  |    60 |            12
+ Sam  |    75 |            15
+(5 rows)
+
+
+postgres=# SELECT DISTINCT score FROM students;
+ score
+-------
+    60
+    85
+    95
+    90
+    75
+(5 rows)
+
+
+postgres=# SELECT * FROM students ORDER BY score DESC LIMIT 3;
+ id | name | score
+----+------+-------
+  5 | Lucy |    95
+  2 | John |    90
+  4 | Alex |    85
+(3 rows)
+
+
+postgres=# SELECT * FROM students ORDER BY score DESC LIMIT 3 OFFSET 3;
+ id | name | score
+----+------+-------
+  6 | Sam  |    75
+  3 | Tom  |    60
+(2 rows)
+
+
+postgres=# UPDATE students SET score = 50 RETURNING *;
+ id | name | score
+----+------+-------
+  2 | John |    50
+  4 | Alex |    50
+  5 | Lucy |    50
+  3 | Tom  |    50
+  6 | Sam  |    50
+(5 rows)
+
+
+UPDATE 5
+postgres=# UPDATE students SET score = 40 WHERE id = 4 RETURNING *;
+ id | name | score
+----+------+-------
+  4 | Alex |    40
+(1 row)
+
+
+UPDATE 1
+postgres=# SELECT name, score, CASE WHEN score = 50 THEN 'A' WHEN score = 40 THEN 'B' ELSE 'C' END AS mark FROM students;
+ name | score | mark
+------+-------+------
+ John |    50 | A
+ Lucy |    50 | A
+ Tom  |    50 | A
+ Sam  |    50 | A
+ Alex |    40 | B
+(5 rows)
+
+
+postgres=#
