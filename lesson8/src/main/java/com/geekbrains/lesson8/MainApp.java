@@ -1,14 +1,16 @@
 package com.geekbrains.lesson8;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 // Reflection
 public class MainApp {
@@ -76,6 +78,32 @@ public class MainApp {
             e.printStackTrace();
         } catch (Exception e) {
             System.err.println("Another exception: " + e.getMessage());
-            e.printStackTrace();        }
+            e.printStackTrace();
+        }
+
+        System.out.println("-//-");
+
+        Class testClass = TestClass.class;
+        Method[] methods2 = testClass.getDeclaredMethods();
+        List<Method> executionList = new ArrayList<>();
+        for (Method o : methods2) {
+            if (o.isAnnotationPresent(MyAnnotation.class)) {
+                //o.invoke(null);
+                executionList.add(o);
+            }
+        }
+        executionList.sort(((o1, o2) -> o2.getAnnotation(MyAnnotation.class).priority() - o1.getAnnotation(MyAnnotation.class).priority()));
+        List<Method> methodsWithAnnotation = Arrays.stream(methods2)
+                .filter(m -> m.isAnnotationPresent(MyAnnotation.class))
+                .sorted(((o1, o2) -> o2.getAnnotation(MyAnnotation.class).priority() - o1.getAnnotation(MyAnnotation.class).priority()))
+                .toList();
+
+        for (Method m : methodsWithAnnotation) {
+            try {
+                m.invoke(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
