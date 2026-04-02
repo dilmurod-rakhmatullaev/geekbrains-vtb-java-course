@@ -1,0 +1,948 @@
+Server [localhost]:
+Database [postgres]:
+Port [5432]:
+Username [postgres]:
+Password for user postgres:
+
+psql (18.3)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+
+postgres=# \dt
+            List of tables
+ Schema |   Name   | Type  |  Owner
+--------+----------+-------+----------
+ public | progress | table | postgres
+ public | students | table | postgres
+(2 rows)
+
+
+postgres=# \d progress
+                             Table "public.progress"
+ Column  |  Type   | Collation | Nullable |               Default
+---------+---------+-----------+----------+--------------------------------------
+ id      | integer |           | not null | nextval('progress_id_seq'::regclass)
+ subject | text    |           |          |
+ mark    | integer |           |          |
+Check constraints:
+    "progress_mark_check" CHECK (mark >= 2 AND mark <= 5)
+
+
+postgres=# INSERT INTO progress (subject, mark) VALUES ('chemistry', 6);
+ERROR:  new row for relation "progress" violates check constraint "progress_mark_check"
+DETAIL:  Failing row contains (1, chemistry, 6).
+postgres=# INSERT INTO progress (subject, mark) VALUES ('chemistry', 4);
+INSERT 0 1
+postgres=# CREATE TABLE demo (id serial, subject text, CONSTRAINT unique_subject UNIQUE (subject));
+CREATE TABLE
+postgres=# \d demo
+                             Table "public.demo"
+ Column  |  Type   | Collation | Nullable |             Default
+---------+---------+-----------+----------+----------------------------------
+ id      | integer |           | not null | nextval('demo_id_seq'::regclass)
+ subject | text    |           |          |
+Indexes:
+    "unique_subject" UNIQUE CONSTRAINT, btree (subject)
+
+
+postgres=# DROP TABLE demo;
+DROP TABLE
+postgres=# CREATE TABLE demo (id serial PRIMARY KEY, subject text, CONSTRAINT unique_subject UNIQUE (subject));
+CREATE TABLE
+postgres=# \d demo
+                             Table "public.demo"
+ Column  |  Type   | Collation | Nullable |             Default
+---------+---------+-----------+----------+----------------------------------
+ id      | integer |           | not null | nextval('demo_id_seq'::regclass)
+ subject | text    |           |          |
+Indexes:
+    "demo_pkey" PRIMARY KEY, btree (id)
+    "unique_subject" UNIQUE CONSTRAINT, btree (subject)
+
+
+postgres=# DROP TABLE demo;
+DROP TABLE
+postgres=# CREATE TABLE demo (id serial PRIMARY KEY, subject text, CONSTRAINT unique_subject UNIQUE (subject), PRIMARY KEY (id));
+ERROR:  multiple primary keys for table "demo" are not allowed
+LINE 1: ...text, CONSTRAINT unique_subject UNIQUE (subject), PRIMARY KE...
+                                                             ^
+postgres=# CREATE TABLE demo (id serial, subject text, CONSTRAINT unique_subject UNIQUE (subject), PRIMARY KEY (id));
+CREATE TABLE
+postgres=# \dt
+            List of tables
+ Schema |   Name   | Type  |  Owner
+--------+----------+-------+----------
+ public | demo     | table | postgres
+ public | progress | table | postgres
+ public | students | table | postgres
+(3 rows)
+
+
+postgres=# \d students
+                            Table "public.students"
+ Column |  Type   | Collation | Nullable |               Default
+--------+---------+-----------+----------+--------------------------------------
+ id     | integer |           | not null | nextval('students_id_seq'::regclass)
+ name   | text    |           |          |
+ score  | integer |           |          |
+
+
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  2 | John |    50
+  5 | Lucy |    50
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+(5 rows)
+
+
+postgres=# \d progress
+                             Table "public.progress"
+ Column  |  Type   | Collation | Nullable |               Default
+---------+---------+-----------+----------+--------------------------------------
+ id      | integer |           | not null | nextval('progress_id_seq'::regclass)
+ subject | text    |           |          |
+ mark    | integer |           |          |
+Check constraints:
+    "progress_mark_check" CHECK (mark >= 2 AND mark <= 5)
+
+
+postgres=# ALTER TABLE progress ADD COLUMN student_id integer;
+ALTER TABLE
+postgres=# \d progress
+                              Table "public.progress"
+   Column   |  Type   | Collation | Nullable |               Default
+------------+---------+-----------+----------+--------------------------------------
+ id         | integer |           | not null | nextval('progress_id_seq'::regclass)
+ subject    | text    |           |          |
+ mark       | integer |           |          |
+ student_id | integer |           |          |
+Check constraints:
+    "progress_mark_check" CHECK (mark >= 2 AND mark <= 5)
+
+
+postgres=# ALTER TABLE students ADD PRIMARY KEY (id);
+ALTER TABLE
+postgres=# \d students
+                            Table "public.students"
+ Column |  Type   | Collation | Nullable |               Default
+--------+---------+-----------+----------+--------------------------------------
+ id     | integer |           | not null | nextval('students_id_seq'::regclass)
+ name   | text    |           |          |
+ score  | integer |           |          |
+Indexes:
+    "students_pkey" PRIMARY KEY, btree (id)
+
+
+postgres=# ALTER TABLE progress ADD FOREIGN KEY (student_id) REFERENCES students (id);
+ALTER TABLE
+postgres=# \d progress
+                              Table "public.progress"
+   Column   |  Type   | Collation | Nullable |               Default
+------------+---------+-----------+----------+--------------------------------------
+ id         | integer |           | not null | nextval('progress_id_seq'::regclass)
+ subject    | text    |           |          |
+ mark       | integer |           |          |
+ student_id | integer |           |          |
+Check constraints:
+    "progress_mark_check" CHECK (mark >= 2 AND mark <= 5)
+Foreign-key constraints:
+    "progress_student_id_fkey" FOREIGN KEY (student_id) REFERENCES students(id)
+
+
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  2 | John |    50
+  5 | Lucy |    50
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+(5 rows)
+
+
+postgres=# INSERT INTO progress (subject, mark, student_id) VALUES ('chemistry', 5, 6);
+INSERT 0 1
+postgres=# SELECT * FROM progress;
+ id |  subject  | mark | student_id
+----+-----------+------+------------
+  2 | chemistry |    4 |
+  3 | chemistry |    5 |          6
+(2 rows)
+
+
+postgres=# INSERT INTO progress (subject, mark, student_id) VALUES ('chemistry', 5, 10);
+ERROR:  insert or update on table "progress" violates foreign key constraint "progress_student_id_fkey"
+DETAIL:  Key (student_id)=(10) is not present in table "students".
+postgres=# DELETE FROM students WHERE id = 6;
+ERROR:  update or delete on table "students" violates foreign key constraint "progress_student_id_fkey" on table "progress"
+DETAIL:  Key (id)=(6) is still referenced from table "progress".
+postgres=# \d progress
+                              Table "public.progress"
+   Column   |  Type   | Collation | Nullable |               Default
+------------+---------+-----------+----------+--------------------------------------
+ id         | integer |           | not null | nextval('progress_id_seq'::regclass)
+ subject    | text    |           |          |
+ mark       | integer |           |          |
+ student_id | integer |           |          |
+Check constraints:
+    "progress_mark_check" CHECK (mark >= 2 AND mark <= 5)
+Foreign-key constraints:
+    "progress_student_id_fkey" FOREIGN KEY (student_id) REFERENCES students(id)
+
+
+postgres=# ALTER TABLE progress DROP CONSTRAINT progress_student_id_fkey;
+ALTER TABLE
+postgres=# \d progress
+                              Table "public.progress"
+   Column   |  Type   | Collation | Nullable |               Default
+------------+---------+-----------+----------+--------------------------------------
+ id         | integer |           | not null | nextval('progress_id_seq'::regclass)
+ subject    | text    |           |          |
+ mark       | integer |           |          |
+ student_id | integer |           |          |
+Check constraints:
+    "progress_mark_check" CHECK (mark >= 2 AND mark <= 5)
+
+
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  2 | John |    50
+  5 | Lucy |    50
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+(5 rows)
+
+
+postgres=# SELECT score, name, id FROM students WHERE score > 45 ORDER BY name ASC;
+ score | name | id
+-------+------+----
+    50 | John |  2
+    50 | Lucy |  5
+    50 | Sam  |  6
+    50 | Tom  |  3
+(4 rows)
+
+
+postgres=# CREATE VIEW my_view AS SELECT score FROM students;
+CREATE VIEW
+postgres=# SELECT * FROM my_view;
+ score
+-------
+    50
+    50
+    50
+    50
+    40
+(5 rows)
+
+
+postgres=# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  2 | John |    50
+  5 | Lucy |    50
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+(5 rows)
+
+
+postgres=# UPDATE students SET score = 100 WHERE id = 5;
+UPDATE 1
+postgres=# SELECT * FROM my_view;
+ score
+-------
+    50
+    50
+    50
+    40
+   100
+(5 rows)
+
+
+postgres=# CREATE MATERIALIZED VIEW mmv AS SELECT score FROM students WHERE score <> 50;
+SELECT 2
+postgres=# SELECT * FROM mmv;
+ score
+-------
+    40
+   100
+(2 rows)
+
+
+postgres=# UPDATE students SET score = 90 WHERE name = 'John' RETURNING *;
+ id | name | score
+----+------+-------
+  2 | John |    90
+(1 row)
+
+
+UPDATE 1
+postgres=# SELECT * FROM mmv;
+ score
+-------
+    40
+   100
+(2 rows)
+
+
+postgres=# SELECT * FROM my_view;
+ score
+-------
+    50
+    50
+    40
+   100
+    90
+(5 rows)
+
+
+postgres=# REFRESH MATERIALIZED VIEW mmv;
+REFRESH MATERIALIZED VIEW
+postgres=# select * from mmv;
+ score
+-------
+    40
+   100
+    90
+(3 rows)
+
+
+postgres=# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  2 | John |    90
+(5 rows)
+
+
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITED;
+ERROR:  syntax error at or near "UNCOMMITED"
+LINE 1: BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITED;
+                                               ^
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+BEGIN
+postgres=*# INSERT INTO students (name, score) VALUES ('Kate', 100);
+INSERT 0 1
+postgres=*# SELECT * FROM students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  2 | John |    90
+  7 | Kate |   100
+(6 rows)
+
+
+postgres=*# COMMIT;
+COMMIT
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN
+postgres=*# UPDATE students SET score = 70 WHERE name = 'John';
+UPDATE 1
+postgres=*# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  7 | Kate |   100
+  2 | John |    70
+(6 rows)
+
+
+postgres=*# COMMIT;
+COMMIT
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN
+postgres=*# UPDATE students SET score = 80 WHERE name = 'John';
+UPDATE 1
+postgres=*# commit;
+COMMIT
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN
+postgres=*# UPDATE students SET score = 70 WHERE name = 'John';
+UPDATE 1
+postgres=*# ROLLBACK;
+ROLLBACK
+postgres=# CREATE TABLE modes (num integer, mode text);
+CREATE TABLE
+postgres=# INSERT INTO modes VALUES (1, 'Low'), (2, 'HIGH');
+INSERT 0 2
+postgres=# select * from modes;
+ num | mode
+-----+------
+   1 | Low
+   2 | HIGH
+(2 rows)
+
+
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+BEGIN
+postgres=*# UPDATE modes SET mode = 'HIGH' WHERE mode = 'LOW' RETURNING *;
+ num | mode
+-----+------
+(0 rows)
+
+
+UPDATE 0
+postgres=*# update modes set mode = 'LOW' where mode = 'Low';
+UPDATE 1
+postgres=*# UPDATE modes SET mode = 'HIGH' WHERE mode = 'LOW' RETURNING *;
+ num | mode
+-----+------
+   1 | HIGH
+(1 row)
+
+
+UPDATE 1
+postgres=*# SELECT * FROM modes;
+ num | mode
+-----+------
+   2 | HIGH
+   1 | HIGH
+(2 rows)
+
+
+postgres=*# COMMIT;
+COMMIT
+postgres=# ROLLBACK;
+WARNING:  there is no transaction in progress
+ROLLBACK
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN
+postgres=*# UPDATE students SET score = 100 WHERE id = 5;
+UPDATE 1
+postgres=*# COMMIT;
+COMMIT
+postgres=# SELECT * FROM students WHERE id = 5;
+ id | name | score
+----+------+-------
+  5 | Lucy |   200
+(1 row)
+
+
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN
+postgres=*# update students set score = score + 20 where id = 5;
+UPDATE 1
+postgres=*# COMMIT;
+COMMIT
+postgres=# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  7 | Kate |   100
+  2 | John |   100
+  5 | Lucy |   260
+(6 rows)
+
+
+postgres=# \d students
+                            Table "public.students"
+ Column |  Type   | Collation | Nullable |               Default
+--------+---------+-----------+----------+--------------------------------------
+ id     | integer |           | not null | nextval('students_id_seq'::regclass)
+ name   | text    |           |          |
+ score  | integer |           |          |
+Indexes:
+    "students_pkey" PRIMARY KEY, btree (id)
+
+
+postgres=# CREATE INDEX name_idx ON students (name);
+CREATE INDEX
+postgres=# \d students
+                            Table "public.students"
+ Column |  Type   | Collation | Nullable |               Default
+--------+---------+-----------+----------+--------------------------------------
+ id     | integer |           | not null | nextval('students_id_seq'::regclass)
+ name   | text    |           |          |
+ score  | integer |           |          |
+Indexes:
+    "students_pkey" PRIMARY KEY, btree (id)
+    "name_idx" btree (name)
+
+
+postgres=# \timing on
+Timing is on.
+postgres=# select * from students where name = 'John';
+ id | name | score
+----+------+-------
+  2 | John |   100
+(1 row)
+
+
+Time: 1.511 ms
+postgres=# drop index name_idx;
+DROP INDEX
+Time: 4.422 ms
+postgres=# select * from students where name = 'John';
+ id | name | score
+----+------+-------
+  2 | John |   100
+(1 row)
+
+
+Time: 1.172 ms
+postgres=# alter table students add column description text;
+ALTER TABLE
+Time: 3.271 ms
+postgres=# select * from students;
+ id | name | score | description
+----+------+-------+-------------
+  3 | Tom  |    50 |
+  6 | Sam  |    50 |
+  4 | Alex |    40 |
+  7 | Kate |   100 |
+  2 | John |   100 |
+  5 | Lucy |   260 |
+(6 rows)
+
+
+Time: 1.246 ms
+postgres=# update students set description = name;
+UPDATE 6
+Time: 5.186 ms
+postgres=# select * from students;
+ id | name | score | description
+----+------+-------+-------------
+  3 | Tom  |    50 | Tom
+  6 | Sam  |    50 | Sam
+  4 | Alex |    40 | Alex
+  7 | Kate |   100 | Kate
+  2 | John |   100 | John
+  5 | Lucy |   260 | Lucy
+(6 rows)
+
+
+Time: 0.781 ms
+postgres=# create unique index desc_unique_idx on students (description);
+CREATE INDEX
+Time: 6.357 ms
+postgres=# \d students
+                               Table "public.students"
+   Column    |  Type   | Collation | Nullable |               Default
+-------------+---------+-----------+----------+--------------------------------------
+ id          | integer |           | not null | nextval('students_id_seq'::regclass)
+ name        | text    |           |          |
+ score       | integer |           |          |
+ description | text    |           |          |
+Indexes:
+    "students_pkey" PRIMARY KEY, btree (id)
+    "desc_unique_idx" UNIQUE, btree (description)
+
+
+postgres=# insert into students (name, score, description) values ('Jack', 70, 'John');
+ERROR:  duplicate key value violates unique constraint "desc_unique_idx"
+DETAIL:  Key (description)=(John) already exists.
+Time: 11.021 ms
+postgres=# drop index desc_unique_idx;
+DROP INDEX
+Time: 5.828 ms
+postgres=# select * from students;
+ id | name | score | description
+----+------+-------+-------------
+  3 | Tom  |    50 | Tom
+  6 | Sam  |    50 | Sam
+  4 | Alex |    40 | Alex
+  7 | Kate |   100 | Kate
+  2 | John |   100 | John
+  5 | Lucy |   260 | Lucy
+(6 rows)
+
+
+Time: 1.280 ms
+postgres=# select * from progress;
+ id |  subject  | mark | student_id
+----+-----------+------+------------
+  2 | chemistry |    4 |
+  3 | chemistry |    5 |          6
+(2 rows)
+
+
+Time: 1.016 ms
+postgres=# select s.name, p.subject, p.mark
+postgres-# from progress as p
+postgres-# join students as s
+postgres-# on s.id = p.student_id
+postgres-# where p.mark = 4;
+ name | subject | mark
+------+---------+------
+(0 rows)
+
+
+Time: 1.084 ms
+postgres=# select s.name, p.subject, p.mark
+postgres-# postgres-# from progress as p
+postgres-# postgres-# join students as s
+postgres-# postgres-# on s.id = p.student_id
+postgres-# postgres-# where p.mark = 5;
+ERROR:  syntax error at or near "-#"
+LINE 2: postgres-# from progress as p
+                ^
+Time: 3.949 ms
+postgres=# select s.name, p.subject, p.mark
+postgres-# from progress as p
+postgres-# join students as s
+postgres-# on s.id = p.student_id
+postgres-# where p.mark = 5;
+ name |  subject  | mark
+------+-----------+------
+ Sam  | chemistry |    5
+(1 row)
+
+
+Time: 0.545 ms
+postgres=# insert into progress (subject, mark, student_id) values ('math', 5, 4);
+INSERT 0 1
+Time: 4.469 ms
+postgres=# select s.name, p.subject, p.mark
+postgres-# from progress as p
+postgres-# join students as s
+postgres-# on s.id = p.student_id
+postgres-# where p.mark = 5;
+ name |  subject  | mark
+------+-----------+------
+ Sam  | chemistry |    5
+ Alex | math      |    5
+(2 rows)
+
+
+Time: 0.745 ms
+postgres=# create table isodemo (id int, score int);
+CREATE TABLE
+Time: 4.875 ms
+postgres=# insert into isodemo (1, 50);
+ERROR:  syntax error at or near "1"
+LINE 1: insert into isodemo (1, 50);
+                             ^
+Time: 7.904 ms
+postgres=# insert into isodemo values (1, 50);
+INSERT 0 1
+Time: 3.354 ms
+postgres=# select * from isodemo;
+ id | score
+----+-------
+  1 |    50
+(1 row)
+
+
+Time: 0.905 ms
+postgres=# begin transaction isolation level read committed;
+BEGIN
+Time: 0.364 ms
+postgres=*# update isodemo set score = 60 where id = 1;
+UPDATE 1
+Time: 0.799 ms
+postgres=*# commit;
+COMMIT
+Time: 2.281 ms
+postgres=# begin transaction isolation level repeatable read;
+BEGIN
+Time: 0.398 ms
+postgres=*# update isodemo set score = 70 where id = 1;
+UPDATE 1
+Time: 0.427 ms
+postgres=*# commit;
+COMMIT
+Time: 3.033 ms
+postgres=# \dt
+            List of tables
+ Schema |   Name   | Type  |  Owner
+--------+----------+-------+----------
+ public | demo     | table | postgres
+ public | isodemo  | table | postgres
+ public | modes    | table | postgres
+ public | progress | table | postgres
+ public | students | table | postgres
+(5 rows)
+
+
+postgres=# delete from modes;
+DELETE 2
+Time: 3.308 ms
+postgres=# insert into modes values (1, 'A), (2, 'B');
+postgres'# select * from modes;
+postgres'# '
+postgres(# insert into modes values (1, 'A'), (2, 'B');
+postgres(# ))';
+postgres'# ';
+ERROR:  syntax error at or near "B');
+select * from modes;
+'"
+LINE 1: insert into modes values (1, 'A), (2, 'B');
+                                               ^
+Time: 5.482 ms
+postgres=# select * from modes;
+ num | mode
+-----+------
+(0 rows)
+
+
+Time: 0.390 ms
+postgres=# insert into modes values (1, 'A'), (2, 'B');
+INSERT 0 2
+Time: 2.954 ms
+postgres=# select * from modes;
+ num | mode
+-----+------
+   1 | A
+   2 | B
+(2 rows)
+
+
+Time: 0.377 ms
+postgres=# begin transaction isolation level serializable;
+BEGIN
+Time: 0.370 ms
+postgres=*# update modes set mode = 'B' where mode = 'A' returning *;
+ num | mode
+-----+------
+   1 | B
+(1 row)
+
+
+UPDATE 1
+Time: 0.774 ms
+postgres=*# commit;
+COMMIT
+Time: 2.964 ms
+postgres=#
+
+Another psql shell:
+Server [localhost]:
+Database [postgres]:
+Port [5432]:
+Username [postgres]:
+Password for user postgres:
+
+psql (18.3)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+
+postgres=# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  2 | John |    90
+(5 rows)
+
+
+postgres=# SHOW default_transaction_isolation;
+ default_transaction_isolation
+-------------------------------
+ read committed
+(1 row)
+
+
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+BEGIN
+postgres=*# SELECT * FROM students WHERE name = 'Kate';
+ id | name | score
+----+------+-------
+(0 rows)
+
+
+postgres=*# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  2 | John |    90
+(5 rows)
+
+
+postgres=*# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  2 | John |    90
+  7 | Kate |   100
+(6 rows)
+
+
+postgres=*# COMMIT;
+COMMIT
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN
+postgres=*# select * from students;
+ id | name | score
+----+------+-------
+  3 | Tom  |    50
+  6 | Sam  |    50
+  4 | Alex |    40
+  5 | Lucy |   100
+  2 | John |    90
+  7 | Kate |   100
+(6 rows)
+
+
+postgres=*# COMMIT;
+COMMIT
+postgres=# BEGIN TRANSACTION ILOSATION LEVEL REPEATABLE READ;
+ERROR:  syntax error at or near "ILOSATION"
+LINE 1: BEGIN TRANSACTION ILOSATION LEVEL REPEATABLE READ;
+                          ^
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN
+postgres=*# SELECT * FROM students WHERE name = 'John';
+ id | name | score
+----+------+-------
+  2 | John |    70
+(1 row)
+
+
+postgres=*# update students set score = 100 where name = 'John';
+ERROR:  could not serialize access due to concurrent update
+postgres=!# BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+postgres=!# ROLLBACK;
+ROLLBACK
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN
+postgres=*# update students set score = 100 where name = 'John';
+UPDATE 1
+postgres=*# COMMIT;
+COMMIT
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+BEGIN
+postgres=*# update modes set mode = 'LOW' WHERE mode = 'HIGH' RETURNING *;
+ num | mode
+-----+------
+   2 | LOW
+(1 row)
+
+
+UPDATE 1
+postgres=*# SELECT * FROM modes;
+ num | mode
+-----+------
+   1 | Low
+   2 | LOW
+(2 rows)
+
+
+postgres=*# COMMIT;
+ERROR:  could not serialize access due to read/write dependencies among transactions
+DETAIL:  Reason code: Canceled on identification as a pivot, during commit attempt.
+HINT:  The transaction might succeed if retried.
+postgres=# ROLLBACK;
+WARNING:  there is no transaction in progress
+ROLLBACK
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN
+postgres=*# UPDATE students SET score = 200 WHERE id = 5;
+UPDATE 1
+postgres=*# COMMIT;
+COMMIT
+postgres=# BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN
+postgres=*# update students set score = score + 40 where id = 5;
+UPDATE 1
+postgres=*# SELECT * FROM students WHERE id = 5;
+ id | name | score
+----+------+-------
+  5 | Lucy |   260
+(1 row)
+
+
+postgres=*# commit;
+COMMIT
+postgres=# begin transaction level read committed;
+ERROR:  syntax error at or near "level"
+LINE 1: begin transaction level read committed;
+                          ^
+postgres=# begin transaction isolation level read committed;
+BEGIN
+postgres=*# select * from isodemo where id = 1;
+ id | score
+----+-------
+  1 |    50
+(1 row)
+
+
+postgres=*# select * from isodemo where id = 1;
+ id | score
+----+-------
+  1 |    50
+(1 row)
+
+
+postgres=*# select * from isodemo where id = 1;
+ id | score
+----+-------
+  1 |    60
+(1 row)
+
+
+postgres=*# commit;
+COMMIT
+postgres=# begin transaction isolation level repeatable read;
+BEGIN
+postgres=*# select * from isodemo where id = 1;
+ id | score
+----+-------
+  1 |    60
+(1 row)
+
+
+postgres=*# select * from isodemo where id = 1;
+ id | score
+----+-------
+  1 |    60
+(1 row)
+
+
+postgres=*# update isodemo set score = 80 where id = 1;
+ERROR:  could not serialize access due to concurrent update
+postgres=!#
+postgres=!# rollback;
+ROLLBACK
+postgres=# begin transaction isolation level serializable;
+BEGIN
+postgres=*# update modes set mode = 'A' where mode = 'B' returning *;
+ num | mode
+-----+------
+   2 | A
+(1 row)
+
+
+UPDATE 1
+postgres=*# commit;
+ERROR:  could not serialize access due to read/write dependencies among transactions
+DETAIL:  Reason code: Canceled on identification as a pivot, during commit attempt.
+HINT:  The transaction might succeed if retried.
+postgres=# select * from modes;
+ num | mode
+-----+------
+   2 | B
+   1 | B
+(2 rows)
+
+
+postgres=#
