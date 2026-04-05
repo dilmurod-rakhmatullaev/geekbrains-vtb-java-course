@@ -1,3 +1,4 @@
+/*
 package com.geekbrains.lesson11;
 
 import org.hibernate.Session;
@@ -121,3 +122,4 @@ public class MainClass {
         }
     }
 }
+*/
