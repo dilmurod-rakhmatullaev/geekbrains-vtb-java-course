@@ -1,13 +1,13 @@
-package com.geekbrains.lesson11;
+package com.geekbrains.lesson11.basics;
 
 
 import jakarta.persistence.*;
-
+import org.hibernate.annotations.Cascade;
 import java.util.List;
 
 @Entity
-@Table(name = "readers")
-public class Reader {
+@Table(name = "authors")
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -16,12 +16,8 @@ public class Reader {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany
-    @JoinTable(
-            name = "books_readers",
-            joinColumns = @JoinColumn(name = "reader_id"),
-            inverseJoinColumns = @JoinColumn(name = "book_id")
-    )
+    @OneToMany(mappedBy = "author")
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private List<Book> books;
 
     public int getId() {
@@ -48,7 +44,7 @@ public class Reader {
         this.books = books;
     }
 
-    public Reader() {
+    public Author() {
     }
 
     @Override
@@ -57,6 +53,6 @@ public class Reader {
         for (Book o : books) {
             allBooks += o.getTitle() + " ";
         }
-        return "Reader [" + id + " " + name + " " + allBooks + "]";
+        return "Author [" + id + " " + name + " " + allBooks + "]";
     }
 }

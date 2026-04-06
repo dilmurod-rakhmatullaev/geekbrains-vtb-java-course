@@ -11,13 +11,13 @@
         <property name="hibernate.connection.password">Arsenal</property>
 
         <!-- Connection Pool -->
-        <property name="hibernate.connection.pool_size">5</property>
+        <property name="hibernate.connection.pool_size">20</property>
 
         <!-- Dialect -->
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
 
         <!-- SQL Output -->
-        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.show_sql">false</property>
         <property name="hibernate.format_sql">true</property>
 
         <!-- Session Context -->

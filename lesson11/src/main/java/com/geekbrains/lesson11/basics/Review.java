@@ -1,4 +1,4 @@
-package com.geekbrains.lesson11;
+package com.geekbrains.lesson11.basics;
 
 import java.io.Serializable;
 
